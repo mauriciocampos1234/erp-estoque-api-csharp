@@ -1,9 +1,18 @@
+using ErpEstoque.Api.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+// 1. Configurando o Banco de Dados (Entity Framework Core)
+// Aqui ensinamos a API a ler a Connection String do appsettings.json e usar o SQL Server
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Configurações do Swagger (Para testarmos a API visualmente depois)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
