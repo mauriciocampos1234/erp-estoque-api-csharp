@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ErpEstoque.Api.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriasController : ControllerBase
