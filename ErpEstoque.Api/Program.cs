@@ -4,31 +4,44 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-// 1. Configurando o Banco de Dados (Entity Framework Core)
-// Aqui ensinamos a API a ler a Connection String do appsettings.json e usar o SQL Server
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 builder.Services.AddControllers();
-
-// Configurações do Swagger (Para testarmos a API visualmente depois)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
+// Configurando o Banco de Dados
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// === CORS: PERMITINDO NOSSO REACT ACESSAR A API ===
+builder.Services.AddCors(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    options.AddPolicy("PermitirReact", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // A porta exata do Vite/React
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+// ===================================================
+
+var app = builder.Configuration.GetConnectionString("DefaultConnection");
+
+var appBuilder = app; // Ignore essa linha se não estiver no seu, é só para manter a estrutura. (Usaremos a variável 'app' gerada pelo WebApplication).
+
+var buildedApp = builder.Build();
+
+if (buildedApp.Environment.IsDevelopment())
+{
+    buildedApp.UseSwagger();
+    buildedApp.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+buildedApp.UseHttpsRedirection();
 
-app.UseAuthorization();
+// === CORS: ATIVANDO A REGRA ANTES DA AUTORIZAÇÃO ===
+buildedApp.UseCors("PermitirReact");
+// ===================================================
 
-app.MapControllers();
-
-app.Run();
+buildedApp.UseAuthorization();
+buildedApp.MapControllers();
+buildedApp.Run();
